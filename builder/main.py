@@ -57,7 +57,6 @@ class Repository:
             return "false"
         else:
             raise ValueError(f"Invalid answer: {is_private}")
-        return is_private
 
     def get_exact_license_keyword(self) -> str:
         # TODO: build a hash table to get the exact license keyword for the API call
