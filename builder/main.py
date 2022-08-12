@@ -19,7 +19,7 @@ class Repository:
             print("\nError while trying to get project information")
             exit(1)
 
-    def get_oauth_token(self):
+    def get_oauth_token(self) -> str:
         home_dir = os.path.expanduser("~")
         oauth_token_file_path = os.path.join(home_dir, "project_builder.json")
         if not os.path.isfile(oauth_token_file_path):
@@ -59,29 +59,33 @@ class Repository:
             raise ValueError(f"Invalid answer: {is_private}")
         return is_private
 
-    def get_exact_license_keyword(self):
+    def get_exact_license_keyword(self) -> str:
         # TODO: build a hash table to get the exact license keyword for the API call
         # See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository#searching-github-by-license-type
+        # Ex.:
+        # "apache": ("Apache license 2.0", "apache-2.0")
+        # the first member of the tuple is the original name for the README and the second
+        # will be useful for the API request in order to generate a LICENSE file.
         pass
 
-    def create_local_repository(self):
+    def create_local_repository(self) -> None:
         subprocess.call(
             ["./builder/scripts/create_repository.sh", self.name, self.repository_link]
         )
 
-    async def create_repository_on_github(self):
+    async def create_repository_on_github(self) -> None:
         # TODO: setup license template name
         data = {
             "name": self.name,
             "description": self.description,
             "private": self.is_private,
             "license_template": "mit",
+            "auto_init": "true",
         }
         headers = {
             "Authorization": f"token {self.oauth_token}",
             "Accept": "application/vnd.github+json",
         }
-        print(headers["Authorization"])
         request = requests.post(
             "https://api.github.com/user/repos", data=json.dumps(data), headers=headers
         )
@@ -93,17 +97,19 @@ class Repository:
         self.repository_link = request.json()["svn_url"]
 
     # TODO: create readme file template for the project
-    def create_readme_file(self):
-        pass
+    def add_readme_template(self) -> None:
+        with open(os.path.join(self.name, "README.md"), "a") as readme:
+            readme.write(f"\n## License\nThis project is licensed under the {self.license_name.upper()} license. See [LICENSE](LICENSE).")
 
 
 class Builder:
     def __init__(self, repository: Repository):
         self.repository = repository
 
-    async def build(self):
+    async def build(self) -> None:
         await self.repository.create_repository_on_github()
         self.repository.create_local_repository()
+        self.repository.add_readme_template()
 
 
 async def main():
