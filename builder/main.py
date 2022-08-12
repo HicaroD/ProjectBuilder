@@ -26,11 +26,10 @@ class Repository:
             raise ValueError("'project_builder.json' was not found on home directory")
 
         with open(oauth_token_file_path) as json_file:
-            token = json.loads(json_file.read())["token"] 
+            token = json.loads(json_file.read())["token"]
             if token is None:
                 raise ValueError("'project_builder' doesn't contain the token")
             return token
-
 
     def get_project_name(self) -> str:
         name = input("What is the project name? ").strip()
@@ -66,7 +65,9 @@ class Repository:
         pass
 
     def create_local_repository(self):
-        subprocess.call(["./builder/scripts/create_repository.sh", self.name, self.repository_link])
+        subprocess.call(
+            ["./builder/scripts/create_repository.sh", self.name, self.repository_link]
+        )
 
     async def create_repository_on_github(self):
         # TODO: setup license template name
@@ -85,7 +86,9 @@ class Repository:
             "https://api.github.com/user/repos", data=json.dumps(data), headers=headers
         )
         if not request:
-            raise ValueError(f"Unable to create repository. Make sure you're credentials are correct and your repository name is not already in use.")
+            raise ValueError(
+                f"Unable to create repository. Make sure you're credentials are correct and your repository name is not already in use."
+            )
 
         self.repository_link = request.json()["svn_url"]
 
