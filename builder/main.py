@@ -2,11 +2,15 @@ from dataclasses import dataclass
 from typing import Optional
 
 
-class ProjectCreator:
+class Project:
     def __init__(self):
-        self.name = self.get_project_name()
-        self.description = self.get_project_description()
-        self.license_name = self.get_license_name()
+        try:
+            self.name = self.get_project_name()
+            self.description = self.get_project_description()
+            self.license_name = self.get_license_name()
+        except KeyboardInterrupt:
+            print("\nError while trying to get project information")
+            exit(1)
 
     def get_project_name(self) -> str:
         name = input("What is the project name? ").strip()
@@ -28,13 +32,14 @@ class ProjectCreator:
 
 
 class Builder:
-    @staticmethod
-    def build():
+    def __init__(self, project: Project):
+        self.project = project
+
+    def build(self):
         try:
-            project = ProjectCreator()
-            print(project.name)
-            print(project.description)
-            print(project.license_name)
+            print(self.project.name)
+            print(self.project.description)
+            print(self.project.license_name)
 
         except Exception as e:
             print(e)
@@ -42,4 +47,6 @@ class Builder:
 
 
 def main():
-    Builder.build()
+    project = Project()
+    builder = Builder(project)
+    builder.build()
