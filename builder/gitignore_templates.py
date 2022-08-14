@@ -1,4 +1,4 @@
-GITIGNORE_TEMPLATES = [
+GITIGNORE_TEMPLATES = {
     "Actionscript",
     "Ada",
     "Agda",
@@ -126,4 +126,4 @@ GITIGNORE_TEMPLATES = [
     "nanoc",
     "opencart",
     "stella",
-]
+}

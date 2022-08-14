@@ -62,7 +62,7 @@ class Repository:
             raise ValueError(f"Invalid answer: {is_private}")
 
     def is_gitignore_template_avaiable(self) -> bool:
-        return self.gitignore_template in GITIGNORE_TEMPLATES  # O(n) operation
+        return self.gitignore_template in GITIGNORE_TEMPLATES
 
     def get_gitignore_template(self) -> Optional[str]:
         license_name = input("(OPTIONAL) What is the .gitignore template? ").strip()
