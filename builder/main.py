@@ -5,6 +5,8 @@ import json
 import os
 
 from licenses import LICENSES
+from gitignore_templates import GITIGNORE_TEMPLATES
+
 
 class Repository:
     def __init__(self):
@@ -12,6 +14,7 @@ class Repository:
             self.name = self.get_project_name()
             self.description = self.get_project_description()
             self.license_name = self.get_license_name()
+            self.gitignore_template = self.get_gitignore_template()
             self.is_private = self.ask_if_repo_is_private()
             self.repository_link = None
             self.oauth_token = self.get_oauth_token()
@@ -58,6 +61,15 @@ class Repository:
         else:
             raise ValueError(f"Invalid answer: {is_private}")
 
+    def is_gitignore_template_avaiable(self) -> bool:
+        return self.gitignore_template in GITIGNORE_TEMPLATES  # O(n) operation
+
+    def get_gitignore_template(self) -> Optional[str]:
+        license_name = input("(OPTIONAL) What is the .gitignore template? ").strip()
+        if license_name == "":
+            return None
+        return license_name
+
     def is_license_avaiable(self) -> bool:
         return self.license_name in LICENSES
 
@@ -75,11 +87,15 @@ class Repository:
         if not self.is_license_avaiable():
             raise ValueError(f"Invalid license name: {self.license_name}")
 
+        if not self.is_gitignore_template_avaiable():
+            raise ValueError(f"Invalid gitignore template: {self.gitignore_template}")
+
         data = {
             "name": self.name,
             "description": self.description,
             "private": self.is_private,
             "license_template": self.license_name,
+            "gitignore_template": self.gitignore_template,
             "auto_init": "true",
         }
         headers = {
@@ -99,12 +115,10 @@ class Repository:
     def add_readme_template(self) -> None:
         original_license_name = self.get_license()
         with open(os.path.join(self.name, "README.md"), "a") as readme:
-            readme.write(f"\n## License\nThis project is licensed under the {original_license_name}. See [LICENSE](LICENSE).")
+            readme.write(
+                f"\n## License\nThis project is licensed under the {original_license_name}. See [LICENSE](LICENSE)."
+            )
 
-    # TODO: get gitignore template
-    # See: https://docs.github.com/en/rest/gitignore#get-a-gitignore-template
-    async def add_gitignore_template(self):
-        pass
 
 class Builder:
     def __init__(self, repository: Repository):
@@ -114,7 +128,6 @@ class Builder:
         await self.repository.create_repository_on_github()
         self.repository.create_local_repository()
         self.repository.add_readme_template()
-        await self.repository.add_gitignore_template()
 
 
 async def main():
