@@ -1,10 +1,10 @@
-from dataclasses import dataclass
 from typing import Optional
 import subprocess
 import requests
 import json
 import os
 
+from licenses import LICENSES
 
 class Repository:
     def __init__(self):
@@ -58,14 +58,10 @@ class Repository:
         else:
             raise ValueError(f"Invalid answer: {is_private}")
 
-    def get_exact_license_keyword(self) -> str:
-        # TODO: build a hash table to get the exact license keyword for the API call
-        # See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository#searching-github-by-license-type
-        # Ex.:
-        # "apache": ("Apache license 2.0", "apache-2.0")
-        # the first member of the tuple is the original name for the README and the second
-        # will be useful for the API request in order to generate a LICENSE file.
-        pass
+    def get_license(self) -> str:
+        if self.license_name not in LICENSES:
+            raise ValueError(f"Invalid license name: {self.license_name}")
+        return LICENSES[self.license_name]
 
     def create_local_repository(self) -> None:
         subprocess.call(
@@ -95,11 +91,13 @@ class Repository:
 
         self.repository_link = request.json()["svn_url"]
 
-    # TODO: create readme file template for the project
     def add_readme_template(self) -> None:
+        original_license_name = self.get_license()
         with open(os.path.join(self.name, "README.md"), "a") as readme:
-            readme.write(f"\n## License\nThis project is licensed under the {self.license_name.upper()} license. See [LICENSE](LICENSE).")
+            readme.write(f"\n## License\nThis project is licensed under the {original_license_name}. See [LICENSE](LICENSE).")
 
+    # TODO: get gitignore template
+    # See: https://docs.github.com/en/rest/gitignore#get-a-gitignore-template
 
 class Builder:
     def __init__(self, repository: Repository):
