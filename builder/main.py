@@ -58,8 +58,11 @@ class Repository:
         else:
             raise ValueError(f"Invalid answer: {is_private}")
 
+    def is_license_avaiable(self) -> bool:
+        return self.license_name in LICENSES
+
     def get_license(self) -> str:
-        if self.license_name not in LICENSES:
+        if not self.is_license_avaiable():
             raise ValueError(f"Invalid license name: {self.license_name}")
         return LICENSES[self.license_name]
 
@@ -69,12 +72,14 @@ class Repository:
         )
 
     async def create_repository_on_github(self) -> None:
-        # TODO: setup license template name
+        if not self.is_license_avaiable():
+            raise ValueError(f"Invalid license name: {self.license_name}")
+
         data = {
             "name": self.name,
             "description": self.description,
             "private": self.is_private,
-            "license_template": "mit",
+            "license_template": self.license_name,
             "auto_init": "true",
         }
         headers = {
@@ -98,6 +103,8 @@ class Repository:
 
     # TODO: get gitignore template
     # See: https://docs.github.com/en/rest/gitignore#get-a-gitignore-template
+    async def add_gitignore_template(self):
+        pass
 
 class Builder:
     def __init__(self, repository: Repository):
@@ -107,6 +114,7 @@ class Builder:
         await self.repository.create_repository_on_github()
         self.repository.create_local_repository()
         self.repository.add_readme_template()
+        await self.repository.add_gitignore_template()
 
 
 async def main():
