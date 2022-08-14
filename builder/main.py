@@ -79,8 +79,13 @@ class Repository:
         return LICENSES[self.license_name]
 
     def create_local_repository(self) -> None:
+        project_name = self.name.replace(" ", "_").lower()
         subprocess.call(
-            ["./builder/scripts/create_repository.sh", self.name, self.repository_link]
+            [
+                "./builder/scripts/create_repository.sh",
+                project_name,
+                self.repository_link,
+            ]
         )
 
     async def create_repository_on_github(self) -> None:
@@ -114,7 +119,8 @@ class Repository:
 
     def add_readme_template(self) -> None:
         original_license_name = self.get_license()
-        with open(os.path.join(self.name, "README.md"), "a") as readme:
+        project_folder = self.name.replace(" ", "_").lower()
+        with open(os.path.join(project_folder, "README.md"), "a") as readme:
             readme.write(
                 f"\n## License\nThis project is licensed under the {original_license_name}. See [LICENSE](LICENSE)."
             )
